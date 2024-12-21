@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../models/department.dart';
 
-enum Department { finance, law, it, medical }
 enum Gender { male, female }
 
 class Student {

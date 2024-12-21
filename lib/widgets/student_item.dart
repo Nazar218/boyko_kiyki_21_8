@@ -1,50 +1,89 @@
 import 'package:flutter/material.dart';
 import '../models/student.dart';
+import '../models/department.dart';
 
 class StudentItem extends StatelessWidget {
   final Student student;
+  final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
-  const StudentItem({Key? key, required this.student}) : super(key: key);
+  const StudentItem({
+    super.key,
+    required this.student,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
-    Color genderColor = student.gender == Gender.male ? Colors.indigo : Colors.orange;
+    final Color cardColor =
+        student.gender == Gender.male ? Colors.blue.shade100 : Colors.pink.shade100;
 
-    return Card(
-      elevation: 5,
-      shadowColor: genderColor.withOpacity(0.3),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+    return Dismissible(
+      key: ValueKey(student),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => onDelete(),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        color: Colors.red,
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
+          size: 30,
+        ),
       ),
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: genderColor.withOpacity(0.7),
-          child: Icon(
-            departmentIcons[student.department],
-            color: Colors.white,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          gradient: LinearGradient(
+            colors: student.gender == Gender.male
+                ? [Colors.blue.shade200, Colors.blue.shade400]
+                : [Colors.pink.shade200, Colors.pink.shade400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        title: Text(
-          '${student.firstName} ${student.lastName}',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Colors.grey[800],
+        child: ListTile(
+          leading: Container(
+            height: 50,
+            width: 50,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+            ),
+            child: Icon(
+              departmentIcons[student.department],
+              color: student.gender == Gender.male ? Colors.blue : Colors.pink,
+              size: 30,
+            ),
           ),
-        ),
-        subtitle: Text(
-          'Grade: ${student.grade}',
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        trailing: Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: genderColor.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
+          title: Text(
+            '${student.firstName} ${student.lastName}',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Colors.white,
+            ),
           ),
-          child: Icon(
-            Icons.star,
-            color: Colors.amber,
+          subtitle: Text(
+            nameDepartment[student.department]!,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
+            ),
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: onEdit,
           ),
         ),
       ),
