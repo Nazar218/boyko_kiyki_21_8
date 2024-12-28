@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/department.dart';
 import '../providers/departments_provider.dart';
+import '../providers/student_provider.dart';
 
 class DepartmentScreen extends ConsumerWidget {
   const DepartmentScreen({super.key});
@@ -9,6 +10,11 @@ class DepartmentScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final departmentCounts = ref.watch(departmentsProvider);
+    final students = ref.watch(studentProvider);
+
+    if (students.dueLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -20,6 +26,7 @@ class DepartmentScreen extends ConsumerWidget {
       itemCount: Department.values.length,
       itemBuilder: (context, index) {
         final department = Department.values[index];
+        final count = students.list.where((s) => s.department == department).length;
         return Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
@@ -85,7 +92,7 @@ class DepartmentScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${departmentCounts[department]} Students',
+                    '$count Students',
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.white70,

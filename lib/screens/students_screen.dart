@@ -9,28 +9,38 @@ class StudentsScreen extends ConsumerWidget {
   const StudentsScreen({super.key});
 
   void launchStudentModal(BuildContext context, WidgetRef ref,
-      {Student? student, int? index}) {
+      {int? index}) {
     showModalBottomSheet<Student>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => NewStudent(student: student),
-    ).then((newStudent) {
-      if (newStudent != null) {
-        if (index != null) {
-          ref.read(studentProvider.notifier).modifyStudent(index, newStudent);
-        } else {
-          ref.read(studentProvider.notifier).insertStudent(newStudent);
-        }
-      }
-    });
+      builder: (_) => NewStudent(studentIndex: index),
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final students = ref.watch(studentProvider);
 
+    if (students.dueLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (students.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              students.error!,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
-      body: students.isEmpty
+      body: students.list.isEmpty
           ? const Center(
               child: Text(
                 'Oops! No students!',
@@ -38,9 +48,9 @@ class StudentsScreen extends ConsumerWidget {
               ),
             )
           : ListView.builder(
-              itemCount: students.length,
+              itemCount: students.list.length,
               itemBuilder: (context, index) {
-                final student = students[index];
+                final student = students.list[index];
                 return StudentItem(
                   student: student,
                   onDelete: () {
@@ -58,13 +68,16 @@ class StudentsScreen extends ConsumerWidget {
                           },
                         ),
                       ),
-                    );
+                    ).closed.then((value) {
+                        if (value != SnackBarClosedReason.action) {
+                          ref.read(studentProvider.notifier).removeLastDeletion();
+                        }
+                      });
                   },
                   onEdit: () {
                     launchStudentModal(
                       context,
                       ref,
-                      student: student,
                       index: index,
                     );
                   },

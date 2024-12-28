@@ -61,7 +61,7 @@ class StudentItem extends StatelessWidget {
               color: Colors.white,
             ),
             child: Icon(
-              departmentIcons[student.department],
+              iconDepartment[student.department],
               color: student.gender == Gender.male ? Colors.blue : Colors.pink,
               size: 30,
             ),
